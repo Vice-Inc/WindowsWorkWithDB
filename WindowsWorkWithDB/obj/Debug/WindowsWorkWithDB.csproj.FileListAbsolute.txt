@@ -1,0 +1,11 @@
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\bin\Debug\Users.mdf
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\bin\Debug\Users_log.ldf
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\bin\Debug\WindowsWorkWithDB.exe.config
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\bin\Debug\WindowsWorkWithDB.exe
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\bin\Debug\WindowsWorkWithDB.pdb
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.csprojAssemblyReference.cache
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.Form1.resources
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.Properties.Resources.resources
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.csproj.GenerateResource.cache
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.exe
+C:\Users\Xiaomi\Documents\C#\WindowsWorkWithDB\WindowsWorkWithDB\obj\Debug\WindowsWorkWithDB.pdb

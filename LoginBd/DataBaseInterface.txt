@@ -1,0 +1,1783 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using System.Data.SqlClient;
+using System.Text.RegularExpressions;
+using System.IO;
+using System.Security.Cryptography;
+
+namespace LoginBd
+{
+    class DataBaseInterface
+    {
+        public static string DBConnectionString = "server=DESKTOP-RFI8Q0J;Trusted_Connection=Yes;DataBase=Game;";
+
+        private string nowLogin;//Логин до замены
+        private string nowNick;//Ник до замены
+        private int ID;//должен быть не изменен
+        private Dictionary<string, int> dictionaryOfPlayerId = new Dictionary<string, int>();//индексы игроков(кроме поиска)
+        private List<int> listOfPresentsId = new List<int>();//индексы в списке друзей, за которые положен подарок
+
+        enum Role { Failed, Admin, User, Online, NetworkFailed, Error };
+
+        public DataBaseInterface(string login)
+        {
+            nowLogin = (string)login.Clone();
+        }
+
+        public string NowLogin
+        {
+            get => nowLogin;
+        }
+
+        public string NowNick
+        {
+            get => nowNick;
+        }
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             ВХОД
+        //////////////////////////////////////////////////////////////////
+
+        //Получение роли по логину и паролю
+        private static Role GetRole(string login, string password, out int ID, bool adminChecked)
+        {
+            ID = 0;
+
+            if(login is null || password is null)
+            {
+                return Role.Failed;
+            }
+
+            try
+            {
+                Role role = Role.Failed;
+                using (var sqlConnection = new SqlConnection(DBConnectionString))
+                {
+                    sqlConnection.Open();
+                    
+                    var command = new SqlCommand("SP_GetRole", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@login", login);
+                    command.Parameters.AddWithValue("@password", GetHash(password));
+
+                    bool roleBool = false;
+                    bool enter = false;
+
+                    using (var dataReader = command.ExecuteReader())
+                    {
+                        if (dataReader.Read())
+                        {
+                            roleBool = (bool)dataReader["Role"];
+                            ID = (int)dataReader["Id"];
+                            enter = true;
+                        }
+                    }
+
+                    //если получили данные
+                    if (enter)
+                    {
+                        //есть права админа
+                        if (roleBool)
+                        {
+                            //входит как админ
+                            if (adminChecked)
+                            {
+                                role = Role.Admin;
+                            }
+                            else//входит как пользователь
+                            {
+                                if (DataBaseInterface.PlayerOnline(sqlConnection, ID))
+                                {
+                                    role = Role.Online;
+                                }
+                                else
+                                {
+                                    role = Role.Admin;
+                                    if (!DataBaseInterface.SetPlayerOnline(sqlConnection, ID, true))
+                                    {
+                                        role = Role.NetworkFailed;
+                                    }
+                                }
+                            }
+                        }
+                        else//нет прав админа
+                        {
+                            if (DataBaseInterface.PlayerOnline(sqlConnection, ID))
+                            {
+                                role = Role.Online;
+                            }
+                            else
+                            {
+                                role = Role.User;
+                                if (!DataBaseInterface.SetPlayerOnline(sqlConnection, ID, true))
+                                {
+                                    role = Role.NetworkFailed;
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                return role;
+            }
+            catch (Exception ex)
+            {
+                return Role.NetworkFailed;
+            }
+        }
+
+        //Функция входа
+        public static string Enter(string login, string password, out int ID, bool adminChecked)
+        {
+            if(login is null || password is null)
+            {
+                ID = 0;
+                return "Пустой логин или пароль!";
+            }
+
+            try
+            {
+                ID = 0;
+                Role role = GetRole(login, password, out ID, adminChecked);
+
+                //OnlineTable
+
+                if (role == Role.Failed)
+                {
+                    return "Неверный логин или пароль!";
+                }
+                else if (role == Role.Online)
+                {
+                    return "Сначала выйдете на другом устройстве!";
+                }
+                else if (role == Role.NetworkFailed)
+                {
+                    return "Не удалось достучаться на сервер!";
+                }
+                else
+                {
+                    if (role == Role.Admin)
+                    {
+                        return "Admin";
+                    }
+                    else if (role == Role.User)
+                    {
+                        return "User";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ID = 0;
+                return ex.Message;
+            }
+
+            return "Не удалось достучаться на сервер!";
+        }
+
+        //Получение логина по нику
+        public static string GetLoginByNick(string nick)
+        {
+            if (nick is null)
+            {
+                return null;
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                Dictionary<string, string> outDictionary = new Dictionary<string, string>();
+
+                var command = new SqlCommand("SP_GetLoginByNick", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Nickname", nick);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        return dataReader["LoginEmail"].ToString();
+                    }
+                }
+
+                return null;
+            }
+        }
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             Регистрация
+        //////////////////////////////////////////////////////////////////
+
+        //Проверка на существование пользователя с таким логином или ником
+        public static string CheckUser(string login, string nick)
+        {
+            if(login is null || nick is null)
+            {
+                return "null";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                //Проверка логина
+                var command = new SqlCommand("SP_CheckUser_CheckLogin", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@login", login);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        return "login";
+                    }
+                }
+
+
+                //Проверка ника
+                command = new SqlCommand("SP_CheckUser_CheckNick", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@nick", nick);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        return "nick";
+                    }
+                }
+
+
+                return "ok";
+            }
+        }
+
+        //Функция регистрации
+        public static string Registation(string login, string nick, string password)
+        {
+            if(login is null || nick is null || password is null)
+            {
+                return "Пустой логин, ник или пароль!";
+            }
+
+            string error = CheckUser(login, nick);
+
+            if (error == "login")
+            {
+                return "Такой логин уже есть!";
+            }
+            else if (error == "nick")
+            {
+                return "Такой ник уже есть!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                //Проверка логина
+                var command = new SqlCommand("SP_Registation", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@login", login);
+                command.Parameters.AddWithValue("@password", GetHash(password));
+                command.Parameters.AddWithValue("@nick", nick);
+                command.Parameters.AddWithValue("@dateOfRegistration", DateTime.Now.ToString("d"));
+                command.Parameters.AddWithValue("@dateOfLastOnline", DateTime.Now.ToString("d"));
+                command.Parameters.AddWithValue("@creditCard", DBNull.Value);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Аккаунт создан!";
+                }
+                else
+                {
+                    return "Не удалось создать аккаунт!";
+                }
+            }
+        }
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             Восстановление
+        //////////////////////////////////////////////////////////////////
+
+        //Проверка на существование данного ника
+        public static bool IsLoginExist(string login)
+        {
+            if(login is null)
+            {
+                return false;
+            }
+
+            if(login == "")
+            {
+                return false;
+            }
+
+            if(CheckUser(login, "NICK") == "login")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             ГЛАВНАЯ СТРАНИЦА
+        //////////////////////////////////////////////////////////////////
+
+        //Получение информации для главной страницы
+        public Dictionary<string, string> GetPageInfo()
+        {
+            if (nowLogin is null)
+            {
+                return null;
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                Dictionary<string, string> outDictionary = new Dictionary<string, string>();
+
+                var command = new SqlCommand("SP_GetPageInfo", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@login", nowLogin);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        outDictionary.Add("Nickname", (string)dataReader["Nickname"]);
+                        nowNick = (string)dataReader["Nickname"].ToString().Clone();
+
+                        outDictionary.Add("Level", dataReader["Level"].ToString());
+                        outDictionary.Add("DateOfRegistration", "Дата регистрации: " + dataReader["DateOfRegistration"].ToString());
+                        outDictionary.Add("CountOfGold", dataReader["CountOfGold"].ToString());
+
+                        if (dataReader["CreditCard"] is DBNull)
+                        {
+                            outDictionary.Add("CreditCard", "Добавьте карту");
+                        }
+                        else
+                        {
+                            outDictionary.Add("CreditCard", dataReader["CreditCard"].ToString());
+                        }
+
+                        if ((bool)dataReader["Role"])
+                        {
+                            outDictionary.Add("Role", "admin");
+                        }
+                        else
+                        {
+                            outDictionary.Add("Role", "user");
+                        }
+
+                        ID = (int)dataReader["Id"];
+                    }
+
+                    return outDictionary;
+                }
+            }
+        }
+
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             ДРУЗЬЯ
+        //////////////////////////////////////////////////////////////////
+
+        //Добавление в друзья из подписчиков
+        public string AddFriend(string clickNick)
+        {
+            if (clickNick is null)
+            {
+                return "Не удалось добавить в друзья!";
+            }
+
+            if (!dictionaryOfPlayerId.ContainsKey(clickNick))
+            {
+                return "Не удалось добавить в друзья!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_AddFriend", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_BothSide", "Друг");
+                command.Parameters.AddWithValue("@_IdOfFirstFriend", ID);
+                command.Parameters.AddWithValue("@_IdOfSecondFriend", dictionaryOfPlayerId[clickNick]);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    command = new SqlCommand("SP_AddFriend", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@_BothSide", "Подарок");
+                    command.Parameters.AddWithValue("@_IdOfFirstFriend", dictionaryOfPlayerId[clickNick]);
+                    command.Parameters.AddWithValue("@_IdOfSecondFriend", ID);
+
+                    if (command.ExecuteNonQuery() != 1)
+                    {
+                        return "Не удалось добавить в друзья!";
+                    }
+
+                    return "OK";
+                }
+                else
+                {
+                    return "Не удалось добавить в друзья!";
+                }
+            }
+        }
+
+        //Добавление в друзья из поиска
+        public string AddSearchFriend(string clickNick)
+        {
+            if (clickNick is null)
+            {
+                return "Не удалось добавить в друзья!";
+            }
+
+            if (!dictionaryOfPlayerId.ContainsKey(clickNick))
+            {
+                return "Не удалось добавить в друзья!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_AddSearchFriend", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_BothSide", "Друг");
+                command.Parameters.AddWithValue("@_IdOfFirstFriend", ID);
+                command.Parameters.AddWithValue("@_IdOfSecondFriend", dictionaryOfPlayerId[clickNick]);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    command = new SqlCommand("SP_AddSearchFriend", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@_BothSide", "Подписчик");
+                    command.Parameters.AddWithValue("@_IdOfFirstFriend", dictionaryOfPlayerId[clickNick]);
+                    command.Parameters.AddWithValue("@_IdOfSecondFriend", ID);
+
+                    if (command.ExecuteNonQuery() != 1)
+                    {
+                        return "Не удалось добавить в друзья!";
+                    }
+
+                    return "OK";
+                }
+                else
+                {
+                    return "Не удалось добавить в друзья!";
+                }
+            }
+        }
+
+
+        //
+        public List<string> searchFriendsByNick(string searchNick)
+        {
+            if (searchNick is null)
+            {
+                return null;
+            }
+
+            List<string> outList = new List<string>();
+
+            foreach (var item in dictionaryOfPlayerId)
+            {
+                if (item.Key.Contains(searchNick))
+                {
+                    outList.Add((string)item.Key.Clone());
+                }
+            }
+
+            return outList;
+        }
+
+        //Получение топа игроков по уровню
+        public List<string> GetTopPlayers()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetTopPlayers", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        outList.Add((string)dataReader["Nickname"] + "(" + dataReader["Level"].ToString() + ")");
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+
+        //Получение всех игроков
+        public List<string> GetAllPlayers()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetAllPlayers", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                dictionaryOfPlayerId.Clear();
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        if (dataReader["Id"] is DBNull)
+                        {
+                            return outList;
+                        }
+
+                        outList.Add((string)dataReader["Nickname"]);
+                        dictionaryOfPlayerId.Add((string)dataReader["Nickname"], (int)dataReader["Id"]);
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+        //Получение друзей и подписчиков
+        public Dictionary<string, List<string>> GetFriends(out int countOfPresents)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                countOfPresents = 0;
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                Dictionary<string, List<string>> outDictionary = new Dictionary<string, List<string>>();
+                outDictionary.Add("friends", new List<string>());
+                outDictionary.Add("maybeFriends", new List<string>());
+
+                var command = new SqlCommand("SP_GetFriends", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Id", ID);
+
+                listOfPresentsId.Clear();
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        if (dataReader["BothSide"].ToString() == "Подписчик")
+                        {
+                            outDictionary["maybeFriends"].Add((string)dataReader["Nickname"]);
+                        }
+                        else if (dataReader["BothSide"].ToString() == "Друг")
+                        {
+                            outDictionary["friends"].Add((string)dataReader["Nickname"]);
+                        }
+                        else if (dataReader["BothSide"].ToString() == "Подарок")
+                        {
+                            outDictionary["friends"].Add((string)dataReader["Nickname"]);
+                            listOfPresentsId.Add(outDictionary["friends"].Count - 1);
+                            ++countOfPresents;
+                        }
+                    }
+                }
+
+                return outDictionary;
+            }
+        }
+
+
+        private KeyValuePair<string, int> GetPresentItem(SqlConnection sqlConnection)
+        {
+            var itemsList = GetItems();
+
+            var command = new SqlCommand("SP_GetPresentItem", sqlConnection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+
+            List<int> listOfPresentsId = new List<int>();
+            List<string> listOfPresentsNames = new List<string>();
+
+            using (var dataReader = command.ExecuteReader())
+            {
+                while (dataReader.Read())
+                {
+                    if (!itemsList.Contains((string)dataReader["Name"]))
+                    {
+                        listOfPresentsId.Add((int)dataReader["Id"]);
+                        listOfPresentsNames.Add((string)dataReader["Name"]);
+                    }
+                }
+            }
+
+            if (listOfPresentsNames.Count == 0)
+            {
+                return new KeyValuePair<string, int>("error", -1);
+            }
+
+            Random random = new Random();
+            int value = random.Next(0, listOfPresentsId.Count);
+
+            return new KeyValuePair<string, int>(listOfPresentsNames[value], listOfPresentsId[value]);
+        }
+
+
+        //Получение подарка
+        public string GetPresent(string clickNick)
+        {
+            if (clickNick is null)
+            {
+                return "Не удалось получить подарок!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_AddFriend", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_BothSide", "Друг");
+                command.Parameters.AddWithValue("@_IdOfFirstFriend", ID);
+                command.Parameters.AddWithValue("@_IdOfSecondFriend", dictionaryOfPlayerId[clickNick]);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    KeyValuePair<string, int> pair = GetPresentItem(sqlConnection);
+
+                    if (pair.Value == -1)
+                    {
+                        return "Все возможные подарки уже получены!";
+                    }
+                    else
+                    {
+                        command = new SqlCommand("SP_GetPresent", sqlConnection);
+                        command.CommandType = System.Data.CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                        command.Parameters.AddWithValue("@_IdOfItem", pair.Value);
+
+                        if (command.ExecuteNonQuery() == 1)
+                        {
+                            return "Вы получили " + pair.Key + "!";
+                        }
+                        else
+                        {
+                            return "Не удалось получить подарок!";
+                        }
+                    }
+                }
+                else
+                {
+                    return "Не удалось получить подарок!";
+                }
+            }
+        }
+
+        //Нужно ли за этого игрока давать подарок
+        public bool IsPresentForPlayer(int id)
+        {
+            return listOfPresentsId.Contains(id);
+        }
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             ВЫСТАВЛЕНИЕ МЕТКИ ОНЛАЙНА
+        //////////////////////////////////////////////////////////////////
+
+        //Проверка в сети ли пользователь
+        public static bool PlayerOnline(SqlConnection sqlConnection, int id)
+        {
+            var command = new SqlCommand("SP_IsPlayerOnline", sqlConnection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@_id", id);
+
+            using (var dataReader = command.ExecuteReader())
+            {
+                if (dataReader.Read())
+                {
+                    if ((bool)dataReader["isOnline"])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    dataReader.Close();
+
+                    command = new SqlCommand("SP_AddPlayerOnline", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@_IdOfPlayer", id);
+
+                    command.ExecuteNonQuery();
+
+                    return false;
+                }
+            }
+        }
+
+
+
+        public static bool SetPlayerOnline(SqlConnection sqlConnection, int id, bool online)
+        {
+            var command = new SqlCommand("SP_SetPlayerOnline", sqlConnection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@_isOnline", online);
+            command.Parameters.AddWithValue("@_IdOfPlayer", id);
+
+            return command.ExecuteNonQuery() == 1;
+        }
+
+
+
+        public bool SetPlayerOnline(bool online)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                var command = new SqlCommand("SP_SetPlayerOnline", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_isOnline", online);
+                command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+
+                return command.ExecuteNonQuery() == 1;
+            }
+        }
+
+
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             ПРЕДМЕТЫ
+        //////////////////////////////////////////////////////////////////
+
+        //Получение предметов
+        public List<string> GetItems()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetItems", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Id", ID);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        outList.Add((string)dataReader["Name"]);
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+        //Получение всех предметов
+        public List<string> GetAllItems()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetAllItems", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        outList.Add((string)dataReader["Name"]);
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+        //Получение информации о предмете
+        public Dictionary<string, string> GetItemInfo(string itemName)
+        {
+            if (itemName is null)
+            {
+                return null;
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                Dictionary<string, string> outDictionary = new Dictionary<string, string>();
+
+                var command = new SqlCommand("SP_GetItemInfo", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Name", itemName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        outDictionary.Add("Cost", dataReader["Cost"].ToString());
+                        outDictionary.Add("Damage", dataReader["Damage"].ToString());
+                        outDictionary.Add("AttackBonus", dataReader["AttackBonus"].ToString());
+                        outDictionary.Add("PtotectionBonus", dataReader["PtotectionBonus"].ToString());
+                        outDictionary.Add("MagicBonus", dataReader["MagicBonus"].ToString());
+                        outDictionary.Add("Rarity", dataReader["Rarity"].ToString());
+                    }
+                }
+
+                sqlConnection.Close();
+
+                return outDictionary;
+            }
+        }
+
+        //Добавление предмета игроку
+        public string AddItemToPlayer(string itemName)
+        {
+            if (itemName is null)
+            {
+                return "Не удалось добавить предмет!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+                string idOfItem = "";
+                
+                command = new SqlCommand("SP_GetItemIdByName", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", itemName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        idOfItem = dataReader["Id"].ToString();
+                    }
+                }
+
+                command = new SqlCommand("SP_AddItemToPlayer", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                command.Parameters.AddWithValue("@_IdOfItem", idOfItem);
+
+                if (command.ExecuteNonQuery() != 1)
+                {
+                    return "Не удалось добавить предмет!";
+                }
+            }
+
+            return "Не удалось достучаться до сервера!";
+        }
+
+        //Удаление предмета у игрока
+        public string DeleteItemFromPlayer(string itemName)
+        {
+            if (itemName is null)
+            {
+                return "Не удалось удалить предмет!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+                string idOfItem = "";
+
+                command = new SqlCommand("SP_GetItemIdByName", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", itemName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        idOfItem = dataReader["Id"].ToString();
+                    }
+                }
+
+                command = new SqlCommand("SP_DeleteItemFromPlayer", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                command.Parameters.AddWithValue("@_IdOfItem", idOfItem);
+
+                if (command.ExecuteNonQuery() != 1)
+                {
+                    return "Не удалось удалить предмет!";
+                }
+            }
+
+            return "Не удалось достучаться до сервера!";
+        }
+
+        //Изменение информации о предмете
+        public string ChangeItemInfo(string name, string newName, string cost, string damage,
+            string attackBonus, string ptotectionBonus, string magicBonus, string rarity)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeItemInfo", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_newName", newName);
+                command.Parameters.AddWithValue("@_name", name);
+                command.Parameters.AddWithValue("@_cost", cost);
+                command.Parameters.AddWithValue("@_damage", damage);
+                command.Parameters.AddWithValue("@_rarity", rarity);
+                command.Parameters.AddWithValue("@_attackBonus", attackBonus);
+                command.Parameters.AddWithValue("@_ptotectionBonus", ptotectionBonus);
+                command.Parameters.AddWithValue("@_magicBonus", magicBonus);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        public void CreateItem(string name)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_CreateItem", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", name);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        //
+        public void RemoveItem(string name)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_RemoveItem", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", name);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             СУНДУКИ
+        //////////////////////////////////////////////////////////////////
+
+        //Получение сундуков пользователя
+        public List<string> GetChests()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetChests", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Id", ID);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        outList.Add((string)dataReader["Name"]);
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+        //Получение всех сундуков
+        public List<string> GetAllChests()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                List<string> outList = new List<string>();
+
+                var command = new SqlCommand("SP_GetAllChests", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        outList.Add((string)dataReader["Name"]);
+                    }
+                }
+
+                return outList;
+            }
+        }
+
+        //Получение информации о сундуке
+        public Dictionary<string, string> GetChestInfo(string chestName)
+        {
+            if (chestName is null)
+            {
+                return null;
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (sqlConnection is null)
+                {
+                    return null;
+                }
+
+                Dictionary<string, string> outDictionary = new Dictionary<string, string>();
+
+                var command = new SqlCommand("SP_GetChestInfo", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_Name", chestName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        outDictionary.Add("Cost", dataReader["Cost"].ToString());
+                        outDictionary.Add("Bauble", dataReader["Bauble"].ToString());
+                        outDictionary.Add("Usual", dataReader["Usual"].ToString());
+                        outDictionary.Add("Rare", dataReader["Rare"].ToString());
+                        outDictionary.Add("SuperRare", dataReader["SuperRare"].ToString());
+                        outDictionary.Add("Unique", dataReader["Unique"].ToString());
+                    }
+                }
+
+                sqlConnection.Close();
+
+                return outDictionary;
+            }
+        }
+
+        //Добавление сундука игроку
+        public string AddChestToPlayer(string chestName)
+        {
+            if (chestName is null)
+            {
+                return "Не удалось добавить сундук!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+                string idOfChest = "";
+
+                command = new SqlCommand("SP_GetChestIdByName", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", chestName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        idOfChest = dataReader["Id"].ToString();
+                    }
+                }
+
+                command = new SqlCommand("SP_AddChestToPlayer", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                command.Parameters.AddWithValue("@_IdOfChest", idOfChest);
+
+                if (command.ExecuteNonQuery() != 1)
+                {
+                    return "Не удалось добавить сундук!";
+                }
+            }
+
+            return "Не удалось достучаться до сервера!";
+        }
+
+        //Удаление сундука у игрока
+        public string DeleteChestFromPlayer(string chestName)
+        {
+            if (chestName is null)
+            {
+                return "Не удалось удалить сундук!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+                string idOfChest = "";
+
+                command = new SqlCommand("SP_GetChestIdByName", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", chestName);
+
+                using (var dataReader = command.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        idOfChest = dataReader["Id"].ToString();
+                    }
+                }
+
+                command = new SqlCommand("SP_DeleteChestFromPlayer", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                command.Parameters.AddWithValue("@_IdOfChest", idOfChest);
+
+                if (command.ExecuteNonQuery() != 1)
+                {
+                    return "Не удалось удалить сундук!";
+                }
+            }
+
+            return "Не удалось достучаться до сервера!";
+        }
+
+        //Изменение информации о сундуке
+        public string ChangeChestInfo(string name, string newName, string cost, string bauble,
+            string usual, string rare, string superRare, string unique)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeChestInfo", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_newName", newName);
+                command.Parameters.AddWithValue("@_name", name);
+                command.Parameters.AddWithValue("@_cost", cost);
+                command.Parameters.AddWithValue("@_bauble", bauble);
+                command.Parameters.AddWithValue("@_usual", usual);
+                command.Parameters.AddWithValue("@_rare", rare);
+                command.Parameters.AddWithValue("@_superRare", superRare);
+                command.Parameters.AddWithValue("@_unique", unique);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        private KeyValuePair<string, int> GetLootItem(SqlConnection sqlConnection, string rarity)
+        {
+            var itemsList = GetItems();
+
+            var command = new SqlCommand("SP_GetLootItem", sqlConnection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@_rarity", rarity);
+
+            List<int> listOfPresentsId = new List<int>();
+            List<string> listOfPresentsNames = new List<string>();
+
+            using (var dataReader = command.ExecuteReader())
+            {
+                while (dataReader.Read())
+                {
+                    if (!itemsList.Contains((string)dataReader["Name"]))
+                    {
+                        listOfPresentsId.Add((int)dataReader["Id"]);
+                        listOfPresentsNames.Add((string)dataReader["Name"]);
+                    }
+                }
+            }
+
+            if (listOfPresentsNames.Count == 0)
+            {
+                return new KeyValuePair<string, int>("error", -1);
+            }
+
+            Random random = new Random();
+            int value = random.Next(0, listOfPresentsId.Count);
+
+            return new KeyValuePair<string, int>(listOfPresentsNames[value], listOfPresentsId[value]);
+        }
+
+        //Открытие сундука
+        public string GetLootOfChest(string rarity)
+        {
+            if (rarity is null)
+            {
+                return "Не удалось получить предмет!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                KeyValuePair<string, int> pair = GetLootItem(sqlConnection, rarity);
+
+                if (pair.Value == -1)
+                {
+                    return "Все возможные предметы уже получены!";
+                }
+                else
+                {
+                    command = new SqlCommand("SP_AddChestToPlayer", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@_IdOfPlayer", ID);
+                    command.Parameters.AddWithValue("@_IdOfItem", pair.Value);
+
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+                        return "Вы получили " + pair.Key + " (" + rarity + ")!";
+                    }
+                    else
+                    {
+                        return "Не удалось получить предмет!";
+                    }
+                }
+            }
+        }
+
+        public void CreateChest(string name)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_CreateChest", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", name);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        //
+        public void RemoveChest(string name)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_RemoveChest", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_name", name);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+
+
+
+
+
+
+
+        //////////////////////////////////////////////////////////////////
+        ///             НАСТРОЙКИ
+        //////////////////////////////////////////////////////////////////
+
+        //Проверка логина
+        private bool ErrorLogin(string newLogin)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (newLogin != nowLogin)
+                {
+                    //Проверка логина
+                    var command = new SqlCommand("SP_IsErrorLogin", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@login", newLogin);
+
+                    using (var dataReader = command.ExecuteReader())
+                    {
+                        if (dataReader.Read())
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        //Изменение логина
+        public string ChangeLogin(string newLogin)
+        {
+            if(newLogin is null)
+            {
+                return "Пустой логин!";
+            }
+
+            if(ErrorLogin(newLogin))
+            {
+                return "Такой логин уже есть!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeLogin", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@login", newLogin);
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    nowLogin = (string)newLogin.Clone();
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Проверка ника
+        private bool ErrorNick(string newNick)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+
+                if (newNick != nowNick)
+                {
+                    //Проверка ника
+                    var command = new SqlCommand("SP_IsErrorNick", sqlConnection);
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@nick", newNick);
+
+                    using (var dataReader = command.ExecuteReader())
+                    {
+                        if (dataReader.Read())
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        //Изменение ника
+        public string ChangeNick(string newNick)
+        {
+            if (newNick is null)
+            {
+                return "Пустой ник!";
+            }
+
+            if (ErrorNick(newNick))
+            {
+                return "Такой ник уже есть!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeNick", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@nick", newNick);
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    nowNick = (string)newNick.Clone();
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение кредитной карты
+        public string ChangeCredit(string newCredit)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeCredit", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                if (newCredit is null || newCredit == "" || newCredit == "Добавьте карту")
+                {
+                    command.Parameters.AddWithValue("@_newCredit", DBNull.Value);
+                    command.Parameters.AddWithValue("@nowLogin", nowLogin);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@_newCredit", newCredit);
+                    command.Parameters.AddWithValue("@nowLogin", nowLogin);
+                }
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение количества золота
+        public string ChangeGold(string countOfGold)
+        {
+            if (countOfGold is null)
+            {
+                return "Пустое поле!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeGold", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_countOfGold", countOfGold);
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение уровня
+        public string ChangeLevel(string level)
+        {
+            if (level is null)
+            {
+                return "Пустое поле!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeLevel", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_level", level);
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение прав администратора
+        public string ChangeRole(bool role)
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeRole", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_role", role);
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение пароля
+        public string ChangePassword(string newPassword)
+        {
+            if (newPassword is null)
+            {
+                return "Пустое поле!";
+            }
+
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangePassword", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@_newPassword", GetHash(newPassword));
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+                    return "Данные изменены!";
+                }
+                else
+                {
+                    return "Не удалось изменить данные!";
+                }
+            }
+        }
+
+        //Изменение даты последнего онлайна
+        public void ChangeDateOfLastOnline()
+        {
+            using (var sqlConnection = new SqlConnection(DBConnectionString))
+            {
+                sqlConnection.Open();
+                SqlCommand command;
+
+                command = new SqlCommand("SP_ChangeDateOfLastOnline", sqlConnection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@dateOfLastOnline", DateTime.Now.ToString("d"));
+                command.Parameters.AddWithValue("@nowLogin", nowLogin);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+
+        
+
+
+        
+
+        //////////////////////////////////////////////////////////////////
+        ///             БЭКАП
+        //////////////////////////////////////////////////////////////////
+
+        public static int BackUp(string backupFileName)
+        {
+            //https://stackoverflow.com/questions/9835553/how-to-backup-sql-database-programmatically-in-c-sharp
+
+            FileStream fileStream = new FileStream(backupFileName, FileMode.Create);
+            fileStream.Close();
+
+            //BACKUP DATABASE [MyDatabase] TO  DISK = 'C:\....\MyDatabase.bak'
+
+            // read connectionstring from config file
+            var connectionString = DBConnectionString;
+
+            var sqlConStrBuilder = new SqlConnectionStringBuilder(connectionString);
+
+            using (var connection = new SqlConnection(sqlConStrBuilder.ConnectionString))
+            {
+                var query = String.Format("BACKUP DATABASE {0} TO DISK='{1}'",
+                    sqlConStrBuilder.InitialCatalog, backupFileName);
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    connection.Open();
+                    return command.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+        public static int LoadFrom(string backupFileName)
+        {
+            FileStream fileStream = new FileStream(backupFileName, FileMode.Open);
+            fileStream.Close();
+
+            // read connectionstring from config file
+            var connectionString = DBConnectionString;
+
+            var sqlConStrBuilder = new SqlConnectionStringBuilder(connectionString);
+
+            using (var connection = new SqlConnection(sqlConStrBuilder.ConnectionString))
+            {
+                connection.Open();
+
+                SqlCommand cmd1 = new SqlCommand("ALTER DATABASE [Game] SET SINGLE_USER WITH ROLLBACK IMMEDIATE ", connection);
+                if(cmd1.ExecuteNonQuery() == 0)
+                {
+                    return 0;
+                }
+
+                SqlCommand cmd2 = new SqlCommand("USE MASTER RESTORE DATABASE [Game] FROM DISK='" + backupFileName + "' WITH REPLACE", connection);
+                if (cmd2.ExecuteNonQuery() == 0)
+                {
+                    return 0;
+                }
+
+                SqlCommand cmd3 = new SqlCommand("ALTER DATABASE [Game] SET MULTI_USER", connection);
+                if (cmd3.ExecuteNonQuery() == 0)
+                {
+                    return 0;
+                }
+
+                return 1;
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////
+        ///             ХЭШИРОВАНИЕ
+        //////////////////////////////////////////////////////////////////
+
+        private static string GetHash(string input)
+        {
+            var md5 = MD5.Create();
+            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+            var ret = Convert.ToBase64String(hash);
+            return ret;
+        }
+
+
+
+
+    }
+}

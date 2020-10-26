@@ -1,0 +1,359 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+
+
+namespace LoginBd
+{
+    public partial class AdminForm : Form
+    {
+        private SqlConnection sqlConnection = null;
+
+        private SqlDataAdapter sqlDataAdapter = null;//С помощью этого изменяется бд
+
+        private SqlCommandBuilder sqlCommandBuilder = null;
+       
+        private DataTable dataTable = null;//Посредник между бд и DataGridView
+
+        private bool newRowAdding = false;
+        private int newRowIndex = -1;
+
+        String nameOfTable = "Player";
+        //DataGridView - только отображение данных из dataTable
+
+        public AdminForm()
+        {
+            InitializeComponent();
+        }
+
+        private void AdminForm_Load(object sender, EventArgs e)
+        {
+            //Строка подключения
+            sqlConnection = new SqlConnection("server=DESKTOP-RFI8Q0J;Trusted_Connection=Yes;DataBase=Game;");
+
+            sqlConnection.Open();
+
+            LoadData(nameOfTable);
+        }
+
+        private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == dataGridView.ColumnCount - 1)
+            {
+                string task = dataGridView.Rows[e.RowIndex].Cells[dataGridView.ColumnCount - 1].Value.ToString();
+
+                if (task == "Delete"  && newRowAdding == false)
+                {
+                    try
+                    {
+                        if (MessageBox.Show("Удалить эту строку?", "Удаление", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                        == DialogResult.Yes)
+                        {
+                            int rowIndex = e.RowIndex;
+                            dataGridView.Rows.RemoveAt(rowIndex);
+                            dataTable.Rows[rowIndex].Delete();
+
+                            sqlDataAdapter.Update(dataTable);
+
+                            ReLoadData();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else if (task == "Insert")
+                {
+                    try
+                    {
+                        int rowIndex = e.RowIndex;
+
+                        DataRow row = dataTable.NewRow();
+
+                        for (int i = 0; i < dataTable.Columns.Count; ++i)
+                        {
+                            if (i > 0 && dataGridView.Rows[rowIndex].Cells[i].Value is System.DBNull)
+                            {
+                                MessageBox.Show("Не все ячейки заполнены!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            row[i] = dataGridView.Rows[rowIndex].Cells[i].Value;
+                        }
+
+                        dataTable.Rows.Add(row);
+                        dataTable.Rows.RemoveAt(dataTable.Rows.Count - 1);
+                        dataGridView.Rows.RemoveAt(dataGridView.Rows.Count - 2);
+
+                        dataGridView.Rows[e.RowIndex].Cells[dataGridView.ColumnCount - 1].Value = "Delete";
+
+                        sqlDataAdapter.Update(dataTable);
+
+                        newRowAdding = false;
+
+                        ReLoadData();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ReLoadData();
+                        newRowAdding = false;
+                    }
+                }
+                else if (task == "Update" && newRowAdding == false)
+                {
+                    try
+                    {
+                        int rowIndex = e.RowIndex;
+
+                        for (int i = 0; i < dataTable.Columns.Count; ++i)
+                        {
+                            dataTable.Rows[rowIndex][i] = dataGridView.Rows[rowIndex].Cells[i].Value;
+                        }
+
+                        sqlDataAdapter.Update(dataTable);
+
+                        dataGridView.Rows[e.RowIndex].Cells[dataGridView.ColumnCount - 1].Value = "Delete";
+
+                        ReLoadData();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        dataGridView.Rows[e.RowIndex].Cells[dataGridView.ColumnCount - 1].Value = "Update";
+                    }
+                }
+
+                //ReLoadData();
+            }
+        }
+
+        private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ReLoadData();
+        }
+
+        private void dataGridView_UserAddedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            try
+            {
+                if (newRowAdding == false)
+                {
+                    newRowAdding = true;
+
+                    int lastRow = dataGridView.Rows.Count - 2;
+
+                    DataGridViewLinkCell linkCell = new DataGridViewLinkCell();
+                    dataGridView[dataGridView.ColumnCount - 1, lastRow] = linkCell;
+
+                    DataGridViewRow row = dataGridView.Rows[lastRow];
+                    row.Cells["Command"].Value = "Insert";
+
+                    //newRowIndex = lastRow;
+
+                    //dataGridView.AllowUserToAddRows = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dataGridView_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (newRowAdding == false)
+                {
+                    int rowIndex = dataGridView.SelectedCells[0].RowIndex;
+
+                    DataGridViewLinkCell linkCell = new DataGridViewLinkCell();
+                    dataGridView[dataGridView.ColumnCount - 1, rowIndex] = linkCell;
+
+                    DataGridViewRow editRow = dataGridView.Rows[rowIndex];
+                    editRow.Cells["Command"].Value = "Update";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dataGridView_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            e.Control.KeyPress -= new KeyPressEventHandler(IgnoreAll);
+            e.Control.KeyPress -= new KeyPressEventHandler(IgnoreDigits);
+
+            if (newRowIndex != -1 && newRowIndex != dataGridView.CurrentCell.RowIndex)
+            {
+                MessageBox.Show("Сначала закончите действия с новой строкой!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                TextBox textBox = e.Control as TextBox;
+                textBox.KeyPress += new KeyPressEventHandler(IgnoreAll);
+            }
+
+            if (dataGridView.CurrentCell.ColumnIndex == 3)
+            {
+                TextBox textBox = e.Control as TextBox;
+
+                if (textBox != null)
+                {
+                    textBox.KeyPress += new KeyPressEventHandler(IgnoreDigits);
+                }
+            }
+        }
+
+
+
+
+
+
+
+        private void IgnoreAll(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void IgnoreDigits(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void LoadData(string table)
+        {
+            string select = "SELECT * , 'Delete' AS [Command] FROM " + table;
+
+            try
+            {
+                sqlDataAdapter = new SqlDataAdapter(select, sqlConnection);
+
+                sqlCommandBuilder = new SqlCommandBuilder(sqlDataAdapter);
+
+                sqlCommandBuilder.GetInsertCommand();
+                sqlCommandBuilder.GetUpdateCommand();
+                sqlCommandBuilder.GetDeleteCommand();
+
+                dataTable = new DataTable();
+
+                sqlDataAdapter.Fill(dataTable);
+
+                dataGridView.DataSource = dataTable;
+
+                //кнопки удалить итд чтобы были активны(замена в таблице)
+                for (int i = 0; i < dataGridView.Rows.Count; i++)
+                {
+                    //ячейка таблицы
+                    DataGridViewLinkCell linkCell = new DataGridViewLinkCell();
+
+                    dataGridView[dataGridView.ColumnCount - 1, i] = linkCell;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ReLoadData()
+        {
+            try
+            {
+                dataTable.Clear();
+
+                sqlDataAdapter.Fill(dataTable);
+
+                dataGridView.DataSource = dataTable;
+
+                //кнопки удалить итд чтобы были активны(замена в таблице)
+                for (int i = 0; i < dataGridView.Rows.Count; i++)
+                {
+                    //ячейка таблицы
+                    DataGridViewLinkCell linkCell = new DataGridViewLinkCell();
+
+                    dataGridView[dataGridView.ColumnCount - 1, i] = linkCell;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
+
+
+
+
+
+        private void playerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataTable.Clear();
+            dataGridView.ClearSelection();
+            dataGridView.DataSource = null;
+
+            nameOfTable = "Player";
+
+            LoadData(nameOfTable);
+        }
+
+        private void itemsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataTable.Clear();
+            dataGridView.ClearSelection();
+            dataGridView.DataSource = null;
+
+            nameOfTable = "Items";
+
+            LoadData(nameOfTable);
+        }
+
+        private void achievementsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataTable.Clear();
+            dataGridView.ClearSelection();
+            dataGridView.DataSource = null;
+
+            nameOfTable = "Achievements";
+
+            LoadData(nameOfTable);
+        }
+
+        private void player_itemToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            dataTable.Clear();
+            dataGridView.ClearSelection();
+            dataGridView.DataSource = null;
+
+            nameOfTable = "PlayersAndItems";
+
+            LoadData(nameOfTable);
+        }
+
+        private void player_achievementsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            dataTable.Clear();
+            dataGridView.ClearSelection();
+            dataGridView.DataSource = null;
+
+            nameOfTable = "PlayersAndAchievements";
+
+            LoadData(nameOfTable);
+        }
+
+    }
+}
