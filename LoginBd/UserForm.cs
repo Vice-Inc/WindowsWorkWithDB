@@ -732,6 +732,8 @@ namespace LoginBd
                     return;
                 }
 
+                GetItems();
+
                 Random random = new Random();
                 int value = random.Next(1, allRarities);
                 string rarity = "";
@@ -757,7 +759,7 @@ namespace LoginBd
                     rarity = "Безделушка";
                 }
 
-                string outString = dataBaseInterface.GetLootOfChest(rarity, clickChest);
+                string outString = dataBaseInterface.GetLootOfChest(rarity, clickChest, itemsListBox.Items);
 
                 if(outString == "Не удалось получить предмет!")
                 {

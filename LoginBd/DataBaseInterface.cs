@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using System.Windows.Forms;
 
 namespace LoginBd
 {
@@ -982,7 +983,7 @@ namespace LoginBd
             return "Данные изменены!";
         }
 
-        private KeyValuePair<string, int> GetLootItem(string rarity)
+        private KeyValuePair<string, int> GetLootItem(string rarity, ListBox.ObjectCollection havingItems)
         {
             var itemsList = GetItems();
 
@@ -1009,8 +1010,11 @@ namespace LoginBd
 
             foreach(var item in dataForResponse.dictionaryStringInt)
             {
-                listOfPresentsNames.Add(item.Key);
-                listOfPresentsId.Add(item.Value);
+                if (!havingItems.Contains(item.Key))
+                {
+                    listOfPresentsNames.Add(item.Key);
+                    listOfPresentsId.Add(item.Value);
+                }
             }
 
             if (listOfPresentsNames.Count == 0)
@@ -1025,14 +1029,14 @@ namespace LoginBd
         }
 
         //Открытие сундука
-        public string GetLootOfChest(string rarity, string clickChest)
+        public string GetLootOfChest(string rarity, string clickChest, ListBox.ObjectCollection havingItems)
         {
             if (rarity is null || clickChest is null)
             {
                 return "Не удалось получить предмет!";
             }
 
-            var pair = GetLootItem(rarity);
+            var pair = GetLootItem(rarity, havingItems);
 
             if (pair.Value == -1)
             {

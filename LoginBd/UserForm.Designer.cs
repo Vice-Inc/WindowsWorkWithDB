@@ -405,7 +405,7 @@
             this.itemsPanel.Controls.Add(this.itemNameLabel);
             this.itemsPanel.Controls.Add(this.itemsListBox);
             this.itemsPanel.Controls.Add(this.label12);
-            this.itemsPanel.Location = new System.Drawing.Point(1070, 569);
+            this.itemsPanel.Location = new System.Drawing.Point(289, 115);
             this.itemsPanel.Name = "itemsPanel";
             this.itemsPanel.Size = new System.Drawing.Size(855, 528);
             this.itemsPanel.TabIndex = 24;
@@ -746,7 +746,7 @@
             this.settingsPanel.Controls.Add(this.pictureBox3);
             this.settingsPanel.Controls.Add(this.passwordFieldTwo);
             this.settingsPanel.Controls.Add(this.changeLoginButton);
-            this.settingsPanel.Location = new System.Drawing.Point(289, 115);
+            this.settingsPanel.Location = new System.Drawing.Point(976, 607);
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(918, 528);
             this.settingsPanel.TabIndex = 18;
