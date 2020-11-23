@@ -157,6 +157,7 @@ namespace LoginBd
         {
             dataBaseInterface.ChangeDateOfLastOnline();
             dataBaseInterface.SetPlayerOnline(false);
+            StagingServerInterface.CloseConnection();
         }
 
         //Кнопка выхода

@@ -158,6 +158,7 @@ namespace LoginBd
         {
             timer20Sec.Stop();
             timer1Sec.Stop();
+            StagingServerInterface.CloseConnection();
 
             this.Close();
         }
@@ -167,6 +168,7 @@ namespace LoginBd
         {
             timer20Sec.Stop();
             timer1Sec.Stop();
+            StagingServerInterface.CloseConnection();
 
             this.Close();
         }

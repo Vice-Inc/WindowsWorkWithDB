@@ -14,20 +14,38 @@ namespace LoginBd
         // адрес и порт сервера, к которому будем подключаться
         static int port = 8005; // порт сервера
         static string address = "127.0.0.1"; // адрес сервера
+        static Socket socket = null;
 
         //////////////////////////////////////////////////////////////////
         ///             ОТПРАВКА СООБЩЕНИЙ ПРОМЕЖУТОЧНОМУ ПО
         //////////////////////////////////////////////////////////////////
 
+        public static void CloseConnection()
+        {
+            if (socket is null)
+            {
+                return;
+            }
+
+            // закрываем сокет
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
+
+            socket = null;
+        }
+
         public static DataForMessage Send(DataForMessage dataForMessage)
         {
             try
             {
-                IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(address), port);
+                if (socket is null)
+                {
+                    IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(address), port);
 
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                // подключаемся к удаленному хосту
-                socket.Connect(ipPoint);
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    // подключаемся к удаленному хосту
+                    socket.Connect(ipPoint);
+                }
 
                 string json = JsonSerializer.Serialize<DataForMessage>(dataForMessage);
                 byte[] bytesDataForMessage = Encoding.Unicode.GetBytes(json);
@@ -114,8 +132,8 @@ namespace LoginBd
                 dataForMessage = JsonSerializer.Deserialize<DataForMessage>(builder.ToString());
 
                 // закрываем сокет
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
+                //socket.Shutdown(SocketShutdown.Both);
+                //socket.Close();
 
                 return dataForMessage;
             }
