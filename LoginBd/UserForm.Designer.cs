@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UserForm));
             this.mainPanel = new System.Windows.Forms.Panel();
+            this.refreshButton = new System.Windows.Forms.PictureBox();
             this.goldMainLabel = new System.Windows.Forms.Label();
             this.pictureBox9 = new System.Windows.Forms.PictureBox();
             this.chestsPanel = new System.Windows.Forms.Panel();
@@ -79,6 +80,7 @@
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
             this.nickNameLabel = new System.Windows.Forms.Label();
             this.settingsPanel = new System.Windows.Forms.Panel();
+            this.updateCheckBox = new System.Windows.Forms.CheckBox();
             this.changeCreditButton = new System.Windows.Forms.Button();
             this.creditField = new System.Windows.Forms.TextBox();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
@@ -103,9 +105,14 @@
             this.settingsButton = new System.Windows.Forms.Button();
             this.exitLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.updateCheckBox = new System.Windows.Forms.CheckBox();
-            this.refreshButton = new System.Windows.Forms.PictureBox();
+            this.dialogsPanel = new System.Windows.Forms.Panel();
+            this.dialogsListBox = new System.Windows.Forms.ListBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.messagesButton = new System.Windows.Forms.Button();
+            this.inputTextBox = new System.Windows.Forms.RichTextBox();
+            this.messagesPanel = new System.Windows.Forms.Panel();
             this.mainPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).BeginInit();
             this.chestsPanel.SuspendLayout();
             this.topPanel.SuspendLayout();
@@ -120,12 +127,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.menuPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).BeginInit();
+            this.dialogsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainPanel
             // 
             this.mainPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.mainPanel.Controls.Add(this.dialogsPanel);
             this.mainPanel.Controls.Add(this.refreshButton);
             this.mainPanel.Controls.Add(this.goldMainLabel);
             this.mainPanel.Controls.Add(this.pictureBox9);
@@ -146,6 +154,17 @@
             this.mainPanel.TabIndex = 1;
             this.mainPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.mainPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
+            // 
+            // refreshButton
+            // 
+            this.refreshButton.Image = ((System.Drawing.Image)(resources.GetObject("refreshButton.Image")));
+            this.refreshButton.Location = new System.Drawing.Point(7, 9);
+            this.refreshButton.Name = "refreshButton";
+            this.refreshButton.Size = new System.Drawing.Size(40, 40);
+            this.refreshButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.refreshButton.TabIndex = 32;
+            this.refreshButton.TabStop = false;
+            this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
             // 
             // goldMainLabel
             // 
@@ -751,10 +770,23 @@
             this.settingsPanel.Controls.Add(this.pictureBox3);
             this.settingsPanel.Controls.Add(this.passwordFieldTwo);
             this.settingsPanel.Controls.Add(this.changeLoginButton);
-            this.settingsPanel.Location = new System.Drawing.Point(289, 115);
+            this.settingsPanel.Location = new System.Drawing.Point(990, 622);
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(918, 528);
             this.settingsPanel.TabIndex = 18;
+            // 
+            // updateCheckBox
+            // 
+            this.updateCheckBox.AutoSize = true;
+            this.updateCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.updateCheckBox.ForeColor = System.Drawing.Color.White;
+            this.updateCheckBox.Location = new System.Drawing.Point(123, 469);
+            this.updateCheckBox.Name = "updateCheckBox";
+            this.updateCheckBox.Size = new System.Drawing.Size(493, 33);
+            this.updateCheckBox.TabIndex = 25;
+            this.updateCheckBox.Text = "Автоматическое обновление контента";
+            this.updateCheckBox.UseVisualStyleBackColor = true;
+            this.updateCheckBox.CheckedChanged += new System.EventHandler(this.updateCheckBox_CheckedChanged);
             // 
             // changeCreditButton
             // 
@@ -941,6 +973,7 @@
             // 
             // menuPanel
             // 
+            this.menuPanel.Controls.Add(this.messagesButton);
             this.menuPanel.Controls.Add(this.chestsButton);
             this.menuPanel.Controls.Add(this.topButton);
             this.menuPanel.Controls.Add(this.myPageButton);
@@ -964,7 +997,7 @@
             this.chestsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chestsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.chestsButton.ForeColor = System.Drawing.Color.White;
-            this.chestsButton.Location = new System.Drawing.Point(11, 188);
+            this.chestsButton.Location = new System.Drawing.Point(11, 250);
             this.chestsButton.Name = "chestsButton";
             this.chestsButton.Size = new System.Drawing.Size(258, 55);
             this.chestsButton.TabIndex = 9;
@@ -983,7 +1016,7 @@
             this.topButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.topButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.topButton.ForeColor = System.Drawing.Color.White;
-            this.topButton.Location = new System.Drawing.Point(8, 246);
+            this.topButton.Location = new System.Drawing.Point(8, 308);
             this.topButton.Name = "topButton";
             this.topButton.Size = new System.Drawing.Size(258, 55);
             this.topButton.TabIndex = 5;
@@ -1040,7 +1073,7 @@
             this.exitButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.exitButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
             this.exitButton.ForeColor = System.Drawing.Color.White;
-            this.exitButton.Location = new System.Drawing.Point(7, 368);
+            this.exitButton.Location = new System.Drawing.Point(7, 430);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(259, 55);
             this.exitButton.TabIndex = 7;
@@ -1059,7 +1092,7 @@
             this.itemsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.itemsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.itemsButton.ForeColor = System.Drawing.Color.White;
-            this.itemsButton.Location = new System.Drawing.Point(8, 130);
+            this.itemsButton.Location = new System.Drawing.Point(8, 192);
             this.itemsButton.Name = "itemsButton";
             this.itemsButton.Size = new System.Drawing.Size(258, 55);
             this.itemsButton.TabIndex = 3;
@@ -1078,7 +1111,7 @@
             this.settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.settingsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.settingsButton.ForeColor = System.Drawing.Color.White;
-            this.settingsButton.Location = new System.Drawing.Point(8, 307);
+            this.settingsButton.Location = new System.Drawing.Point(8, 369);
             this.settingsButton.Name = "settingsButton";
             this.settingsButton.Size = new System.Drawing.Size(258, 55);
             this.settingsButton.TabIndex = 6;
@@ -1115,29 +1148,75 @@
             this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.label1_MouseDown);
             this.label1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.label1_MouseMove);
             // 
-            // updateCheckBox
+            // dialogsPanel
             // 
-            this.updateCheckBox.AutoSize = true;
-            this.updateCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.updateCheckBox.ForeColor = System.Drawing.Color.White;
-            this.updateCheckBox.Location = new System.Drawing.Point(123, 469);
-            this.updateCheckBox.Name = "updateCheckBox";
-            this.updateCheckBox.Size = new System.Drawing.Size(493, 33);
-            this.updateCheckBox.TabIndex = 25;
-            this.updateCheckBox.Text = "Автоматическое обновление контента";
-            this.updateCheckBox.UseVisualStyleBackColor = true;
-            this.updateCheckBox.CheckedChanged += new System.EventHandler(this.updateCheckBox_CheckedChanged);
+            this.dialogsPanel.Controls.Add(this.inputTextBox);
+            this.dialogsPanel.Controls.Add(this.messagesPanel);
+            this.dialogsPanel.Controls.Add(this.dialogsListBox);
+            this.dialogsPanel.Controls.Add(this.label13);
+            this.dialogsPanel.Location = new System.Drawing.Point(289, 115);
+            this.dialogsPanel.Name = "dialogsPanel";
+            this.dialogsPanel.Size = new System.Drawing.Size(880, 528);
+            this.dialogsPanel.TabIndex = 33;
             // 
-            // refreshButton
+            // dialogsListBox
             // 
-            this.refreshButton.Image = ((System.Drawing.Image)(resources.GetObject("refreshButton.Image")));
-            this.refreshButton.Location = new System.Drawing.Point(7, 9);
-            this.refreshButton.Name = "refreshButton";
-            this.refreshButton.Size = new System.Drawing.Size(40, 40);
-            this.refreshButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.refreshButton.TabIndex = 32;
-            this.refreshButton.TabStop = false;
-            this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
+            this.dialogsListBox.BackColor = System.Drawing.Color.Silver;
+            this.dialogsListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.dialogsListBox.FormattingEnabled = true;
+            this.dialogsListBox.ItemHeight = 32;
+            this.dialogsListBox.Location = new System.Drawing.Point(30, 48);
+            this.dialogsListBox.Name = "dialogsListBox";
+            this.dialogsListBox.Size = new System.Drawing.Size(296, 452);
+            this.dialogsListBox.TabIndex = 3;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label13.ForeColor = System.Drawing.Color.White;
+            this.label13.Location = new System.Drawing.Point(23, 8);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(134, 37);
+            this.label13.TabIndex = 2;
+            this.label13.Text = "Диалоги";
+            // 
+            // messagesButton
+            // 
+            this.messagesButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.messagesButton.FlatAppearance.BorderColor = System.Drawing.Color.Tomato;
+            this.messagesButton.FlatAppearance.BorderSize = 0;
+            this.messagesButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.OrangeRed;
+            this.messagesButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Gray;
+            this.messagesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.messagesButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.messagesButton.ForeColor = System.Drawing.Color.White;
+            this.messagesButton.Location = new System.Drawing.Point(8, 130);
+            this.messagesButton.Name = "messagesButton";
+            this.messagesButton.Size = new System.Drawing.Size(258, 55);
+            this.messagesButton.TabIndex = 10;
+            this.messagesButton.Text = "Сообщения";
+            this.messagesButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.messagesButton.UseVisualStyleBackColor = true;
+            this.messagesButton.Click += new System.EventHandler(this.messagesButton_Click);
+            // 
+            // inputTextBox
+            // 
+            this.inputTextBox.ForeColor = System.Drawing.Color.Black;
+            this.inputTextBox.Location = new System.Drawing.Point(332, 419);
+            this.inputTextBox.Name = "inputTextBox";
+            this.inputTextBox.Size = new System.Drawing.Size(528, 81);
+            this.inputTextBox.TabIndex = 17;
+            this.inputTextBox.Text = "";
+            // 
+            // messagesPanel
+            // 
+            this.messagesPanel.BackColor = System.Drawing.Color.Silver;
+            this.messagesPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.messagesPanel.Location = new System.Drawing.Point(332, 48);
+            this.messagesPanel.Name = "messagesPanel";
+            this.messagesPanel.Size = new System.Drawing.Size(528, 365);
+            this.messagesPanel.TabIndex = 16;
             // 
             // UserForm
             // 
@@ -1153,6 +1232,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserForm_FormClosing);
             this.mainPanel.ResumeLayout(false);
             this.mainPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).EndInit();
             this.chestsPanel.ResumeLayout(false);
             this.chestsPanel.PerformLayout();
@@ -1172,7 +1252,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.menuPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).EndInit();
+            this.dialogsPanel.ResumeLayout(false);
+            this.dialogsPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1255,5 +1336,11 @@
         private System.Windows.Forms.PictureBox pictureBox9;
         private System.Windows.Forms.CheckBox updateCheckBox;
         private System.Windows.Forms.PictureBox refreshButton;
+        private System.Windows.Forms.Panel dialogsPanel;
+        private System.Windows.Forms.RichTextBox inputTextBox;
+        private System.Windows.Forms.Panel messagesPanel;
+        private System.Windows.Forms.ListBox dialogsListBox;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Button messagesButton;
     }
 }

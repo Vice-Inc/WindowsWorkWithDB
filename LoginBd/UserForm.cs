@@ -42,6 +42,7 @@ namespace LoginBd
 
             pagePanel.Location = new System.Drawing.Point(200, 80);
             friendsPanel.Location = new System.Drawing.Point(200, 80);
+            dialogsPanel.Location = new System.Drawing.Point(200, 80);
             itemsPanel.Location = new System.Drawing.Point(200, 80);
             chestsPanel.Location = new System.Drawing.Point(200, 80);
             settingsPanel.Location = new System.Drawing.Point(200, 80);
@@ -230,6 +231,21 @@ namespace LoginBd
             try
             {
                 GetFriends();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void messagesButton_Click(object sender, EventArgs e)
+        {
+            PanelSetVisible(dialogsPanel);
+            page = "Сообщения";
+
+            try
+            {
+                //GetFriends();
             }
             catch (Exception ex)
             {
@@ -657,10 +673,11 @@ namespace LoginBd
         }
 
 
+        //////////////////////////////////////////////////////////////////
+        ///             СООБЩЕНИЯ
+        //////////////////////////////////////////////////////////////////
 
-
-
-
+        
 
         //////////////////////////////////////////////////////////////////
         ///             ПРЕДМЕТЫ
@@ -888,6 +905,7 @@ namespace LoginBd
         {
             pagePanel.Visible = false;
             friendsPanel.Visible = false;
+            dialogsPanel.Visible = false;
             itemsPanel.Visible = false;
             chestsPanel.Visible = false;
             settingsPanel.Visible = false;
