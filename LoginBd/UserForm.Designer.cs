@@ -103,6 +103,8 @@
             this.settingsButton = new System.Windows.Forms.Button();
             this.exitLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.updateCheckBox = new System.Windows.Forms.CheckBox();
+            this.refreshButton = new System.Windows.Forms.PictureBox();
             this.mainPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).BeginInit();
             this.chestsPanel.SuspendLayout();
@@ -118,11 +120,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.menuPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).BeginInit();
             this.SuspendLayout();
             // 
             // mainPanel
             // 
             this.mainPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.mainPanel.Controls.Add(this.refreshButton);
             this.mainPanel.Controls.Add(this.goldMainLabel);
             this.mainPanel.Controls.Add(this.pictureBox9);
             this.mainPanel.Controls.Add(this.chestsPanel);
@@ -148,7 +152,7 @@
             this.goldMainLabel.AutoSize = true;
             this.goldMainLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.goldMainLabel.ForeColor = System.Drawing.Color.Gold;
-            this.goldMainLabel.Location = new System.Drawing.Point(53, 51);
+            this.goldMainLabel.Location = new System.Drawing.Point(53, 67);
             this.goldMainLabel.Name = "goldMainLabel";
             this.goldMainLabel.Size = new System.Drawing.Size(97, 29);
             this.goldMainLabel.TabIndex = 31;
@@ -157,7 +161,7 @@
             // pictureBox9
             // 
             this.pictureBox9.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox9.Image")));
-            this.pictureBox9.Location = new System.Drawing.Point(7, 41);
+            this.pictureBox9.Location = new System.Drawing.Point(7, 57);
             this.pictureBox9.Name = "pictureBox9";
             this.pictureBox9.Size = new System.Drawing.Size(40, 40);
             this.pictureBox9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -405,7 +409,7 @@
             this.itemsPanel.Controls.Add(this.itemNameLabel);
             this.itemsPanel.Controls.Add(this.itemsListBox);
             this.itemsPanel.Controls.Add(this.label12);
-            this.itemsPanel.Location = new System.Drawing.Point(289, 115);
+            this.itemsPanel.Location = new System.Drawing.Point(1073, 569);
             this.itemsPanel.Name = "itemsPanel";
             this.itemsPanel.Size = new System.Drawing.Size(855, 528);
             this.itemsPanel.TabIndex = 24;
@@ -732,6 +736,7 @@
             // settingsPanel
             // 
             this.settingsPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.settingsPanel.Controls.Add(this.updateCheckBox);
             this.settingsPanel.Controls.Add(this.changeCreditButton);
             this.settingsPanel.Controls.Add(this.creditField);
             this.settingsPanel.Controls.Add(this.pictureBox6);
@@ -746,7 +751,7 @@
             this.settingsPanel.Controls.Add(this.pictureBox3);
             this.settingsPanel.Controls.Add(this.passwordFieldTwo);
             this.settingsPanel.Controls.Add(this.changeLoginButton);
-            this.settingsPanel.Location = new System.Drawing.Point(976, 607);
+            this.settingsPanel.Location = new System.Drawing.Point(289, 115);
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(918, 528);
             this.settingsPanel.TabIndex = 18;
@@ -1110,6 +1115,30 @@
             this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.label1_MouseDown);
             this.label1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.label1_MouseMove);
             // 
+            // updateCheckBox
+            // 
+            this.updateCheckBox.AutoSize = true;
+            this.updateCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.updateCheckBox.ForeColor = System.Drawing.Color.White;
+            this.updateCheckBox.Location = new System.Drawing.Point(123, 469);
+            this.updateCheckBox.Name = "updateCheckBox";
+            this.updateCheckBox.Size = new System.Drawing.Size(493, 33);
+            this.updateCheckBox.TabIndex = 25;
+            this.updateCheckBox.Text = "Автоматическое обновление контента";
+            this.updateCheckBox.UseVisualStyleBackColor = true;
+            this.updateCheckBox.CheckedChanged += new System.EventHandler(this.updateCheckBox_CheckedChanged);
+            // 
+            // refreshButton
+            // 
+            this.refreshButton.Image = ((System.Drawing.Image)(resources.GetObject("refreshButton.Image")));
+            this.refreshButton.Location = new System.Drawing.Point(7, 9);
+            this.refreshButton.Name = "refreshButton";
+            this.refreshButton.Size = new System.Drawing.Size(40, 40);
+            this.refreshButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.refreshButton.TabIndex = 32;
+            this.refreshButton.TabStop = false;
+            this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
+            // 
             // UserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1143,6 +1172,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.menuPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1223,5 +1253,7 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label goldMainLabel;
         private System.Windows.Forms.PictureBox pictureBox9;
+        private System.Windows.Forms.CheckBox updateCheckBox;
+        private System.Windows.Forms.PictureBox refreshButton;
     }
 }

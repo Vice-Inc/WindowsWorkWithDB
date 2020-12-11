@@ -84,6 +84,8 @@ namespace LoginBd
             timer1Sec.Interval = 1000;
             timer1Sec.Tick += Timer1Sec_Tick;
             timer1Sec.Enabled = true;
+
+            updateCheckBox.Checked = true;
         }
 
 
@@ -96,8 +98,11 @@ namespace LoginBd
 
         private void Timer20Sec_Tick(object sender, EventArgs e)
         {
-            UpDate();
-            HideAll();
+            if (updateCheckBox.Checked)
+            {
+                UpDate();
+                HideAll();
+            }
             
             secToUpdate = 20;
         }
@@ -151,6 +156,28 @@ namespace LoginBd
         //////////////////////////////////////////////////////////////////
         ///             СОБЫТИЯ ОКНА
         //////////////////////////////////////////////////////////////////
+
+        private void updateCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (updateCheckBox.Checked)
+            {
+                updateLabel.Visible = true;
+                refreshButton.Visible = false;
+            }
+            else
+            {
+                updateLabel.Visible = false;
+                refreshButton.Visible = true;
+            }
+        }
+
+        private void refreshButton_Click(object sender, EventArgs e)
+        {
+            HideAll();
+            UpDate();
+
+            secToUpdate = 20;
+        }
 
         //Выход из бд
         private void UserForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -1047,12 +1074,39 @@ namespace LoginBd
             var dictionary = dataBaseInterface.GetChestInfo(nameOfChest);
             chestNameLabel.Text = nameOfChest;
 
-            chestCostLabel.Text = "Стоимость: " + dictionary["Cost"];
-            chestBaubleLabel.Text = "Безделушка: " + dictionary["Bauble"];
-            chestUsualLabel.Text = "Обычный: " + dictionary["Usual"];
-            chestRareLabel.Text = "Редкий: " + dictionary["Rare"];
-            chestSuperRareLabel.Text = "Супер редкий: " + dictionary["SuperRare"];
-            chestUniqueLabel.Text = "Уникальный: " + dictionary["Unique"];
+            double Bauble = int.Parse(dictionary["Bauble"]);
+            double Usual = int.Parse(dictionary["Usual"]);
+            double Rare = int.Parse(dictionary["Rare"]);
+            double SuperRare = int.Parse(dictionary["SuperRare"]);
+            double Unique = int.Parse(dictionary["Unique"]);
+
+            double all = Bauble + Usual + Rare + SuperRare + Unique;
+
+            if (all > 0)
+            {
+                chestCostLabel.Text = "Стоимость: " + dictionary["Cost"];
+                chestBaubleLabel.Text = "Безделушка: " + ((Bauble / all) * 100).ToString("#.#") + "%";
+                chestUsualLabel.Text = "Обычный: " + ((Usual / all) * 100).ToString("#.#") + "%";
+                chestRareLabel.Text = "Редкий: " + ((Rare / all) * 100).ToString("#.#") + "%";
+                chestSuperRareLabel.Text = "Супер редкий: " + ((SuperRare / all) * 100).ToString("#.#") + "%";
+                chestUniqueLabel.Text = "Уникальный: " + ((Unique / all) * 100).ToString("#.#") + "%";
+            }
+            else
+            {
+                chestCostLabel.Text = "Стоимость: " + dictionary["Cost"];
+                chestBaubleLabel.Text = "Безделушка: " + "0%";
+                chestUsualLabel.Text = "Обычный: " + "0%";
+                chestRareLabel.Text = "Редкий: " + "0%";
+                chestSuperRareLabel.Text = "Супер редкий: " + "0%";
+                chestUniqueLabel.Text = "Уникальный: " + "0%";
+            }
+
+            //chestCostLabel.Text = "Стоимость: " + dictionary["Cost"];
+            //chestBaubleLabel.Text = "Безделушка: " + dictionary["Bauble"];
+            //chestUsualLabel.Text = "Обычный: " + dictionary["Usual"];
+            //chestRareLabel.Text = "Редкий: " + dictionary["Rare"];
+            //chestSuperRareLabel.Text = "Супер редкий: " + dictionary["SuperRare"];
+            //chestUniqueLabel.Text = "Уникальный: " + dictionary["Unique"];
 
             buyChestButton.Text = "Купить (" + dictionary["Cost"] + ")";
             clickChestCost = int.Parse(dictionary["Cost"]);

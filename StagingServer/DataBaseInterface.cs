@@ -38,6 +38,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50 
+                || dataForMessage.dictionaryStringString["@password"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль!";
+                return dataForResponse;
+            }
+
             try
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.dictionaryStringString);
@@ -86,6 +94,21 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@_Nickname"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный ник!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -131,6 +154,22 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50
+                || dataForMessage.dictionaryStringString["@nick"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или ник!";
                 return dataForResponse;
             }
 
@@ -191,6 +230,15 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50
+                || dataForMessage.dictionaryStringString["@nick"].Length >= 50
+                || dataForMessage.dictionaryStringString["@password"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин, ник или пароль!";
                 return dataForResponse;
             }
 
@@ -262,6 +310,21 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин!";
                 return dataForResponse;
             }
 
@@ -343,6 +406,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -400,6 +471,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -461,6 +540,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.listString);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -502,6 +589,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -550,6 +645,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -615,6 +718,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.dictionaryStringInt);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -652,6 +763,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -817,6 +936,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.listString);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -860,6 +987,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.listString);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -900,6 +1035,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -952,6 +1095,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1011,6 +1162,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1079,6 +1238,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1127,6 +1294,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1166,6 +1341,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1219,6 +1402,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.listString);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1264,6 +1455,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.listString);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1306,6 +1505,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1358,6 +1565,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1417,6 +1632,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1493,6 +1716,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1541,6 +1772,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.dictionaryStringInt);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1578,6 +1817,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1659,6 +1906,14 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1698,6 +1953,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -1754,6 +2017,21 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1798,6 +2076,21 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@login"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1838,6 +2131,21 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@nick"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный ник!";
                 return dataForResponse;
             }
 
@@ -1885,6 +2193,21 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@nick"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный ник!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -1926,6 +2249,22 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            Regex reg = new Regex(@"^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$");
+            if (!reg.IsMatch(dataForMessage.dictionaryStringString["@_newCredit"]))
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Введите верный номер карты!";
                 return dataForResponse;
             }
 
@@ -1982,6 +2321,24 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            foreach (var c in dataForMessage.dictionaryStringString["@_countOfGold"])
+            {
+                if (!Char.IsNumber(c))
+                {
+                    dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                    dataForResponse.@string = "Требуется число!";
+                    return dataForResponse;
+                }
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -2026,6 +2383,24 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            foreach (var c in dataForMessage.dictionaryStringString["@_level"])
+            {
+                if (!Char.IsNumber(c))
+                {
+                    dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                    dataForResponse.@string = "Требуется число!";
+                    return dataForResponse;
+                }
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -2067,6 +2442,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -2114,6 +2497,21 @@ namespace StagingServer
                 return dataForResponse;
             }
 
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@_newPassword"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный пароль!";
+                return dataForResponse;
+            }
+
             dataForResponse.SetDataType(DataForMessage.DataType.String);
 
             using (var sqlConnection = new SqlConnection(DBConnectionString))
@@ -2155,6 +2553,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -2206,6 +2612,14 @@ namespace StagingServer
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
+                return dataForResponse;
+            }
+
+            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
+                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
+            {
+                dataForResponse.SetDataType(DataForMessage.DataType.Error);
+                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 

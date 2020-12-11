@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="images\cycle.png" />
     <Content Include="images\login.png" />
     <Content Include="images\mail.png" />
     <Content Include="images\password.png" />

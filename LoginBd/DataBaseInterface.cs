@@ -149,6 +149,12 @@ namespace LoginBd
                 return "Пустой логин или пароль!";
             }
 
+            if (login.Length >= 50 || GetHash(password).Length >= 50)
+            {
+                ID = 0;
+                return "Слишком длинный логин или пароль!";
+            }
+
             try
             {
                 ID = 0;
@@ -197,6 +203,11 @@ namespace LoginBd
                 return null;
             }
 
+            if (nick.Length >= 50)
+            {
+                return "Слишком длинный логин или пароль!";
+            }
+
             DataForMessage dataForMessage = new DataForMessage();
             dataForMessage.SetDataType(DataForMessage.DataType.Command);
             dataForMessage.@string = "SP_GetLoginByNick";
@@ -229,6 +240,11 @@ namespace LoginBd
                 return "null";
             }
 
+            if (login.Length >= 50 || nick.Length >= 50)
+            {
+                return "Слишком длинный логин или ник!";
+            }
+
             //Проверка логина
             DataForMessage dataForMessage = new DataForMessage();
             dataForMessage.SetDataType(DataForMessage.DataType.Command);
@@ -253,6 +269,11 @@ namespace LoginBd
             if (login is null || nick is null || password is null)
             {
                 return "Пустой логин, ник или пароль!";
+            }
+
+            if (login.Length >= 50 || nick.Length >= 50 || GetHash(password).Length >= 50)
+            {
+                return "Слишком длинный логин ник, или пароль!";
             }
 
             DataForMessage dataForMessage = new DataForMessage();
@@ -294,7 +315,12 @@ namespace LoginBd
                 return false;
             }
 
-            if(CheckUser(login, "NICK") == "login")
+            if (login.Length >= 50)
+            {
+                return false;
+            }
+
+            if (CheckUser(login, "NICK") == "login")
             {
                 return true;
             }
@@ -420,6 +446,11 @@ namespace LoginBd
         public List<string> searchFriendsByNick(string searchNick)
         {
             if (searchNick is null)
+            {
+                return null;
+            }
+
+            if (searchNick.Length >= 50)
             {
                 return null;
             }
@@ -616,7 +647,7 @@ namespace LoginBd
 
 
         //////////////////////////////////////////////////////////////////
-        ///             ВЫСТАВЛЕНИЕ МЕТКИ ОНЛАЙНА
+        ///             ВЫСТАВЛЕНИЕ ОНЛАЙНА
         //////////////////////////////////////////////////////////////////
 
         //Проверка в сети ли пользователь
@@ -1138,6 +1169,11 @@ namespace LoginBd
                 return "Пустой логин!";
             }
 
+            if (newLogin.Length >= 50)
+            {
+                return " Слишком длинный логин!";
+            }
+
             if (ErrorLogin(newLogin))
             {
                 return "Такой логин уже есть!";
@@ -1201,6 +1237,11 @@ namespace LoginBd
                 return "Пустой ник!";
             }
 
+            if (newNick.Length >= 50)
+            {
+                return " Слишком длинный ник!";
+            }
+
             if (ErrorNick(newNick))
             {
                 return "Такой ник уже есть!";
@@ -1229,6 +1270,12 @@ namespace LoginBd
         //Изменение кредитной карты
         public string ChangeCredit(string newCredit)
         {
+            Regex reg = new Regex(@"^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$");
+            if (!reg.IsMatch(newCredit))
+            {
+               return "Введите верный номер карты!";
+            }
+
             DataForMessage dataForMessage = new DataForMessage();
             dataForMessage.SetDataType(DataForMessage.DataType.Command);
             dataForMessage.@string = "SP_ChangeCredit";
@@ -1265,6 +1312,14 @@ namespace LoginBd
                 return "Пустое поле!";
             }
 
+            foreach(var c in countOfGold)
+            {
+                if(!Char.IsNumber(c))
+                {
+                    return "Требуется число!";
+                }
+            }
+
             DataForMessage dataForMessage = new DataForMessage();
             dataForMessage.SetDataType(DataForMessage.DataType.Command);
             dataForMessage.@string = "SP_ChangeGold";
@@ -1291,6 +1346,14 @@ namespace LoginBd
             if (level is null)
             {
                 return "Пустое поле!";
+            }
+
+            foreach (var c in level)
+            {
+                if (!Char.IsNumber(c))
+                {
+                    return "Требуется число!";
+                }
             }
 
             DataForMessage dataForMessage = new DataForMessage();

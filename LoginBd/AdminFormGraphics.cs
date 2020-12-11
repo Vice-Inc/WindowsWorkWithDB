@@ -85,6 +85,8 @@ namespace LoginBd
 
             itemRarityComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             itemRarityComboBox.SelectedIndex = 1;
+
+            updateCheckBox.Checked = true;
         }
 
 
@@ -96,9 +98,11 @@ namespace LoginBd
 
         private void Timer20Sec_Tick(object sender, EventArgs e)
         {
-
-            HideAll();
-            UpDate();
+            if (updateCheckBox.Checked)
+            {
+                HideAll();
+                UpDate();
+            }
 
             secToUpdate = 20;
         }
@@ -152,6 +156,28 @@ namespace LoginBd
         //////////////////////////////////////////////////////////////////
         ///             СОБЫТИЯ ОКНА
         //////////////////////////////////////////////////////////////////
+
+        private void updateCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if(updateCheckBox.Checked)
+            {
+                updateLabel.Visible = true;
+                refreshButton.Visible = false;
+            }
+            else
+            {
+                updateLabel.Visible = false;
+                refreshButton.Visible = true;
+            }
+        }
+
+        private void refreshButton_Click(object sender, EventArgs e)
+        {
+            HideAll();
+            UpDate();
+
+            secToUpdate = 20;
+        }
 
         //Кнопка выхода
         private void exitLabel_Click(object sender, EventArgs e)
@@ -1573,7 +1599,5 @@ namespace LoginBd
                 e.Handled = true;
             }
         }
-
-        
     }
 }

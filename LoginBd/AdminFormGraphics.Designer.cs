@@ -136,6 +136,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.updateCheckBox = new System.Windows.Forms.CheckBox();
+            this.refreshButton = new System.Windows.Forms.PictureBox();
             this.mainPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).BeginInit();
             this.chestsPanel.SuspendLayout();
@@ -152,11 +154,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.menuPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).BeginInit();
             this.SuspendLayout();
             // 
             // mainPanel
             // 
             this.mainPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.mainPanel.Controls.Add(this.refreshButton);
             this.mainPanel.Controls.Add(this.goldMainLabel);
             this.mainPanel.Controls.Add(this.pictureBox9);
             this.mainPanel.Controls.Add(this.chestsPanel);
@@ -181,7 +185,7 @@
             this.goldMainLabel.AutoSize = true;
             this.goldMainLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.goldMainLabel.ForeColor = System.Drawing.Color.Gold;
-            this.goldMainLabel.Location = new System.Drawing.Point(54, 54);
+            this.goldMainLabel.Location = new System.Drawing.Point(54, 68);
             this.goldMainLabel.Name = "goldMainLabel";
             this.goldMainLabel.Size = new System.Drawing.Size(97, 29);
             this.goldMainLabel.TabIndex = 29;
@@ -190,7 +194,7 @@
             // pictureBox9
             // 
             this.pictureBox9.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox9.Image")));
-            this.pictureBox9.Location = new System.Drawing.Point(8, 44);
+            this.pictureBox9.Location = new System.Drawing.Point(8, 58);
             this.pictureBox9.Name = "pictureBox9";
             this.pictureBox9.Size = new System.Drawing.Size(40, 40);
             this.pictureBox9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -223,7 +227,7 @@
             this.chestsPanel.Controls.Add(this.chestCostLabel);
             this.chestsPanel.Controls.Add(this.chestsListBox);
             this.chestsPanel.Controls.Add(this.label14);
-            this.chestsPanel.Location = new System.Drawing.Point(297, 121);
+            this.chestsPanel.Location = new System.Drawing.Point(1182, 487);
             this.chestsPanel.Name = "chestsPanel";
             this.chestsPanel.Size = new System.Drawing.Size(898, 528);
             this.chestsPanel.TabIndex = 25;
@@ -1112,6 +1116,7 @@
             // settingsPanel
             // 
             this.settingsPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.settingsPanel.Controls.Add(this.updateCheckBox);
             this.settingsPanel.Controls.Add(this.adminCheckBox);
             this.settingsPanel.Controls.Add(this.changeLevelButton);
             this.settingsPanel.Controls.Add(this.levelField);
@@ -1133,7 +1138,8 @@
             this.settingsPanel.Controls.Add(this.pictureBox3);
             this.settingsPanel.Controls.Add(this.passwordFieldTwo);
             this.settingsPanel.Controls.Add(this.changeLoginButton);
-            this.settingsPanel.Location = new System.Drawing.Point(1077, 537);
+            this.settingsPanel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.settingsPanel.Location = new System.Drawing.Point(289, 115);
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(918, 528);
             this.settingsPanel.TabIndex = 18;
@@ -1612,6 +1618,30 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // updateCheckBox
+            // 
+            this.updateCheckBox.AutoSize = true;
+            this.updateCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.updateCheckBox.ForeColor = System.Drawing.Color.White;
+            this.updateCheckBox.Location = new System.Drawing.Point(63, 484);
+            this.updateCheckBox.Name = "updateCheckBox";
+            this.updateCheckBox.Size = new System.Drawing.Size(493, 33);
+            this.updateCheckBox.TabIndex = 24;
+            this.updateCheckBox.Text = "Автоматическое обновление контента";
+            this.updateCheckBox.UseVisualStyleBackColor = true;
+            this.updateCheckBox.CheckedChanged += new System.EventHandler(this.updateCheckBox_CheckedChanged);
+            // 
+            // refreshButton
+            // 
+            this.refreshButton.Image = ((System.Drawing.Image)(resources.GetObject("refreshButton.Image")));
+            this.refreshButton.Location = new System.Drawing.Point(8, 9);
+            this.refreshButton.Name = "refreshButton";
+            this.refreshButton.Size = new System.Drawing.Size(40, 40);
+            this.refreshButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.refreshButton.TabIndex = 30;
+            this.refreshButton.TabStop = false;
+            this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
+            // 
             // AdminFormGraphics
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1645,6 +1675,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.menuPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.refreshButton)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1758,5 +1789,7 @@
         private System.Windows.Forms.Button loadFromButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.CheckBox updateCheckBox;
+        private System.Windows.Forms.PictureBox refreshButton;
     }
 }
