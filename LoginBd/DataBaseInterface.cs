@@ -249,8 +249,6 @@ namespace LoginBd
             DataForMessage dataForMessage = new DataForMessage();
             dataForMessage.SetDataType(DataForMessage.DataType.Command);
             dataForMessage.@string = "SP_CheckUser";
-            dataForMessage.dictionaryStringString.Add("@loginFrom", senderLogin);
-            dataForMessage.dictionaryStringString.Add("@passwordFrom", GetHash(senderPassword));
             dataForMessage.dictionaryStringString.Add("@login", login);
             dataForMessage.dictionaryStringString.Add("@nick", nick);
 

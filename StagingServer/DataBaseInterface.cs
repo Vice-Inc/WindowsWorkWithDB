@@ -147,21 +147,11 @@ namespace StagingServer
             DataForMessage dataForResponse = new DataForMessage();
 
             if (dataForMessage is null ||
-                !dataForMessage.dictionaryStringString.ContainsKey("@loginFrom") ||
-                !dataForMessage.dictionaryStringString.ContainsKey("@passwordFrom") ||
                 !dataForMessage.dictionaryStringString.ContainsKey("@login") ||
                 !dataForMessage.dictionaryStringString.ContainsKey("@nick"))
             {
                 dataForResponse.SetDataType(DataForMessage.DataType.Error);
                 dataForResponse.@string = "Пустой запрос";
-                return dataForResponse;
-            }
-
-            if (dataForMessage.dictionaryStringString["@loginFrom"].Length >= 50
-                || dataForMessage.dictionaryStringString["@passwordFrom"].Length >= 50)
-            {
-                dataForResponse.SetDataType(DataForMessage.DataType.Error);
-                dataForResponse.@string = "Слишком длинный логин или пароль отправителя!";
                 return dataForResponse;
             }
 
@@ -182,8 +172,6 @@ namespace StagingServer
                 //Проверка логина
                 var command = new SqlCommand("SP_CheckUser_CheckLogin", sqlConnection);
                 command.CommandType = System.Data.CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@loginFrom", dataForMessage.dictionaryStringString["@loginFrom"]);
-                command.Parameters.AddWithValue("@passwordFrom", dataForMessage.dictionaryStringString["@passwordFrom"]);
                 command.Parameters.AddWithValue("@login", dataForMessage.dictionaryStringString["@login"]);
 
                 using (var dataReader = command.ExecuteReader())
@@ -199,8 +187,6 @@ namespace StagingServer
                 //Проверка ника
                 command = new SqlCommand("SP_CheckUser_CheckNick", sqlConnection);
                 command.CommandType = System.Data.CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@loginFrom", dataForMessage.dictionaryStringString["@loginFrom"]);
-                command.Parameters.AddWithValue("@passwordFrom", dataForMessage.dictionaryStringString["@passwordFrom"]);
                 command.Parameters.AddWithValue("@nick", dataForMessage.dictionaryStringString["@nick"]);
 
                 using (var dataReader = command.ExecuteReader())
